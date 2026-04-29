@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Professor Alex — English Conversation Tutor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14; --surface: #161920; --surface2: #1e2230;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --accent: #5b8dee; --accent2: #7fd4c1;
+    --text: #eef0f6; --text2: #8b90a4; --text3: #5c6070;
+    --red: #e05a6a; --green: #5dbf8a; --yellow: #f0c060;
+    --pill-radius: 100px; --card-radius: 18px;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.6;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
+  }
+  body::before, body::after {
+    content: ''; position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0;
+  }
+  body::before { width: 500px; height: 500px; top: -100px; left: -100px; background: radial-gradient(circle, rgba(91,141,238,0.12) 0%, transparent 70%); }
+  body::after  { width: 400px; height: 400px; bottom: -80px; right: -80px; background: radial-gradient(circle, rgba(127,212,193,0.10) 0%, transparent 70%); }
+
+  .app { position: relative; z-index: 1; width: 100%; max-width: 720px; padding: 24px 20px 40px; display: flex; flex-direction: column; min-height: 100vh; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 24px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); letter-spacing: -0.3px; }
+  .logo-text span { color: var(--accent2); }
+  .logo-sub { font-size: 12px; color: var(--text3); margin-top: -2px; font-weight: 300; }
+
+  #status-pill { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); padding: 6px 14px; border-radius: var(--pill-radius); background: var(--surface); border: 1px solid var(--border); transition: all 0.3s; }
+  #status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); transition: all 0.3s; }
+  #status-pill.listening { border-color: var(--red); color: var(--red); }
+  #status-pill.listening #status-dot { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+  #status-pill.thinking { border-color: var(--accent); color: var(--accent); }
+  #status-pill.thinking #status-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1s infinite; }
+  #status-pill.ready { border-color: var(--green); color: var(--green); }
+  #status-pill.ready #status-dot { background: var(--green); }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
+
+  /* Setup */
+  #setup-panel { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--card-radius); padding: 28px; margin-bottom: 20px; }
+  #setup-panel h2 { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  #setup-panel p { font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 16px; }
+  #setup-panel a { color: var(--accent2); text-decoration: none; }
+  #setup-panel a:hover { text-decoration: underline; }
+  .steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .step { display: flex; align-items: flex-start; gap: 12px; font-size: 13.5px; color: var(--text2); }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: rgba(91,141,238,0.15); border: 1px solid rgba(91,141,238,0.3); color: var(--accent); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .key-field { display: flex; gap: 8px; align-items: center; }
+  #api-key-input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; }
+  #api-key-input::placeholder { color: var(--text3); }
+  #api-key-input:focus { border-color: rgba(91,141,238,0.5); }
+  #api-key-input.error { border-color: var(--red); }
+  #save-key-btn { padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(91,141,238,0.4); background: rgba(91,141,238,0.15); color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  #save-key-btn:hover { background: rgba(91,141,238,0.25); }
+  .key-hint { font-size: 12px; color: var(--text3); margin-top: 8px; }
+  .free-badge { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; background: rgba(93,191,138,0.15); border: 1px solid rgba(93,191,138,0.3); color: var(--green); margin-left: 8px; vertical-align: middle; }
+
+  /* Chat */
+  #chat-area { flex: 1; display: flex; flex-direction: column; }
+  #chat-box { flex: 1; overflow-y: auto; padding: 4px 0 16px; display: flex; flex-direction: column; gap: 16px; min-height: 280px; max-height: calc(100vh - 380px); scrollbar-width: thin; scrollbar-color: var(--surface2) transparent; }
+  #chat-box::-webkit-scrollbar { width: 4px; }
+  #chat-box::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  .message { display: flex; gap: 12px; align-items: flex-start; animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+  .message.user { flex-direction: row-reverse; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .avatar.ai  { background: linear-gradient(135deg,#1a2a4a,#1e3a50); border: 1px solid rgba(91,141,238,0.3); }
+  .avatar.user{ background: var(--surface2); border: 1px solid var(--border2); }
+
+  .bubble { max-width: 82%; padding: 13px 16px; font-size: 14.5px; line-height: 1.65; color: var(--text); white-space: pre-wrap; }
+  .bubble.ai   { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 16px 16px 16px; }
+  .bubble.user { background: linear-gradient(135deg,rgba(91,141,238,0.2),rgba(91,141,238,0.1)); border: 1px solid rgba(91,141,238,0.25); border-radius: 16px 4px 16px 16px; text-align: right; }
+
+  .correction-box { margin-top: 10px; padding: 10px 13px; background: rgba(240,192,96,0.07); border-left: 3px solid var(--yellow); border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.7; color: var(--text2); }
+  .correction-box strong { color: var(--yellow); font-weight: 500; }
+
+  .thinking-dots { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+  .thinking-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); animation: dot 1.2s infinite; }
+  .thinking-dots span:nth-child(2){animation-delay:.2s} .thinking-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes dot { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-5px);opacity:1} }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0 18px; }
+
+  #transcript-preview { display: none; font-size: 13px; color: var(--accent); background: rgba(91,141,238,0.07); border: 1px solid rgba(91,141,238,0.2); border-radius: 10px; padding: 8px 14px; margin-bottom: 10px; font-style: italic; }
+
+  .input-area { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+  #user-input { flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 14.5px; color: var(--text); resize: none; line-height: 1.5; min-height: 48px; max-height: 140px; transition: border-color 0.2s; outline: none; }
+  #user-input::placeholder { color: var(--text3); }
+  #user-input:focus { border-color: rgba(91,141,238,0.5); }
+
+  .btn-round { width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: all 0.2s; }
+  .btn-round:hover { background: var(--surface2); }
+  .btn-round:active { transform: scale(0.95); }
+  .btn-round.recording { background: rgba(224,90,106,0.15); border-color: var(--red); color: var(--red); animation: mic-pulse 1.5s infinite; }
+  @keyframes mic-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(224,90,106,.3)} 50%{box-shadow:0 0 0 8px rgba(224,90,106,0)} }
+
+  #send-btn { height: 48px; padding: 0 22px; border-radius: 14px; border: 1px solid rgba(91,141,238,0.4); background: rgba(91,141,238,0.15); color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; flex-shrink: 0; transition: all 0.2s; }
+  #send-btn:hover { background: rgba(91,141,238,0.25); border-color: var(--accent); }
+  #send-btn:active { transform: scale(0.97); }
+  #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .quick-prompts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .quick-btn { font-size: 12.5px; padding: 6px 13px; border-radius: var(--pill-radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
+  .quick-btn:hover { border-color: rgba(91,141,238,0.4); color: var(--accent); background: rgba(91,141,238,0.07); }
+
+  .controls-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--text3); padding-top: 6px; border-top: 1px solid var(--border); }
+  .controls-row label { display: flex; align-items: center; gap: 7px; cursor: pointer; color: var(--text2); }
+  .controls-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+  .controls-row input[type="range"] { width: 80px; accent-color: var(--accent); cursor: pointer; }
+  #speed-label { color: var(--accent); font-weight: 500; min-width: 28px; }
+  .change-key { margin-left: auto; font-size: 12px; color: var(--text3); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .change-key:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🎓</div>
+      <div>
+        <div class="logo-text">Professor <span>Alex</span></div>
+        <div class="logo-sub">English Conversation Tutor • Groq (free &amp; fast)</div>
+      </div>
+    </div>
+    <div id="status-pill"><div id="status-dot"></div><span id="status-text">Setup</span></div>
+  </header>
+
+  <div id="setup-panel">
+    <h2>Get your free Groq API Key <span class="free-badge">100% free</span></h2>
+    <p>Groq is genuinely free — no credit card, no billing. It uses the Llama 3 model and is extremely fast.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>Access <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> and create a free account (can use Google login).</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>Click <strong style="color:var(--text)">Create API Key</strong>, give it any name, and copy the key (<code style="font-size:12px;color:var(--accent2)">gsk_...</code>).</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>Paste it below and click <strong style="color:var(--text)">Start</strong>. The key is saved only in your browser.</div>
+      </div>
+    </div>
+    <div class="key-field">
+      <input type="password" id="api-key-input" placeholder="gsk_..." autocomplete="off" />
+      <button id="save-key-btn">Start →</button>
+    </div>
+    <div class="key-hint">Your key stays in localStorage — never sent anywhere except Groq's API.</div>
+  </div>
+
+  <div id="chat-area" style="display:none; flex:1; flex-direction:column;">
+    <div id="chat-box"></div>
+    <div class="divider"></div>
+    <div id="transcript-preview"></div>
+    <div class="input-area">
+      <textarea id="user-input" rows="1" placeholder="Type in English or press the mic..."></textarea>
+      <button class="btn-round" id="mic-btn" title="Click to speak">🎤</button>
+      <button id="send-btn">Send ↑</button>
+    </div>
+    <div class="quick-prompts">
+      <button class="quick-btn" onclick="sendQuick('Let me introduce myself.')">👋 Introduce myself</button>
+      <button class="quick-btn" onclick="sendQuick('Give me a topic to talk about in English.')">🗣️ Give me a topic</button>
+      <button class="quick-btn" onclick="sendQuick('Can you correct my last message in more detail?')">✏️ More corrections</button>
+      <button class="quick-btn" onclick="sendQuick('Teach me a useful everyday English expression.')">💡 Teach me an expression</button>
+    </div>
+    <div class="controls-row">
+      <label><input type="checkbox" id="tts-toggle" checked /> Read replies aloud</label>
+      <label style="margin-left:auto;">
+        Speed: <input type="range" id="tts-speed" min="0.6" max="1.6" step="0.1" value="0.95" />
+        <span id="speed-label">1.0x</span>
+      </label>
+      <span class="change-key" onclick="changeKey()">change key</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are Professor Alex, a warm, patient, and highly skilled English teacher with 20 years of experience helping Portuguese speakers learn English. You are having a natural spoken conversation with a student.
+
+RULES:
+1. Always reply in English only — never switch to Portuguese.
+2. Keep your main response natural and conversational — 2 to 4 sentences max.
+3. After your reply, if the student made any grammar or vocabulary mistakes, add a correction block in this EXACT format:
+---CORRECTION---
+📝 Correction: [write the corrected version of their sentence, briefly]
+💡 Tip: [one short, practical grammar or vocabulary tip]
+---END---
+4. If their English was correct or very good, do NOT add the correction block — just respond naturally and add a small encouraging remark.
+5. Always end with a question or gentle prompt to keep the conversation going.
+6. Be warm, encouraging, and human — like a real conversation partner, not a textbook.
+7. Gradually adapt difficulty to the student's level as the conversation continues.`;
+
+let conversationHistory = [];
+let recognition = null;
+let isRecording = false;
+let apiKey = localStorage.getItem('prof_alex_groq_key') || '';
+
+const chatBox      = document.getElementById('chat-box');
+const userInput    = document.getElementById('user-input');
+const sendBtn      = document.getElementById('send-btn');
+const micBtn       = document.getElementById('mic-btn');
+const statusPill   = document.getElementById('status-pill');
+const statusText   = document.getElementById('status-text');
+const transcriptEl = document.getElementById('transcript-preview');
+const ttsToggle    = document.getElementById('tts-toggle');
+const ttsSpeed     = document.getElementById('tts-speed');
+const speedLabel   = document.getElementById('speed-label');
+const setupPanel   = document.getElementById('setup-panel');
+const chatArea     = document.getElementById('chat-area');
+const apiKeyInput  = document.getElementById('api-key-input');
+const saveKeyBtn   = document.getElementById('save-key-btn');
+
+ttsSpeed.addEventListener('input', () => { speedLabel.textContent = parseFloat(ttsSpeed.value).toFixed(1) + 'x'; });
+
+function setStatus(state, text) { statusPill.className = state; statusText.textContent = text; }
+
+function appendMessage(role, rawText) {
+  const isUser = role === 'user';
+  const wrap = document.createElement('div');
+  wrap.className = 'message ' + (isUser ? 'user' : 'ai');
+
+  const av = document.createElement('div');
+  av.className = 'avatar ' + (isUser ? 'user' : 'ai');
+  av.textContent = isUser ? '🙂' : '🎓';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (isUser ? 'user' : 'ai');
+
+  const corrMatch = rawText.match(/---CORRECTION---([\s\S]*?)---END---/);
+  const mainText  = rawText.replace(/---CORRECTION---[\s\S]*?---END---/, '').trim();
+  bubble.textContent = mainText;
+
+  if (corrMatch) {
+    const corrDiv = document.createElement('div');
+    corrDiv.className = 'correction-box';
+    corrDiv.innerHTML = corrMatch[1].trim()
+      .replace(/📝 Correction:/g, '<strong>📝 Correction:</strong>')
+      .replace(/💡 Tip:/g, '<br><strong>💡 Tip:</strong>')
+      .replace(/\n/g, ' ');
+    bubble.appendChild(corrDiv);
+  }
+
+  wrap.appendChild(av);
+  wrap.appendChild(bubble);
+  chatBox.appendChild(wrap);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function speakText(text) {
+  if (!ttsToggle.checked) return;
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  const clean = text.replace(/---CORRECTION---[\s\S]*?---END---/, '').trim();
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = 'en-US';
+  utt.rate = parseFloat(ttsSpeed.value);
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang.startsWith('en') && /google|daniel|samantha|karen/i.test(v.name))
+    || voices.find(v => v.lang.startsWith('en-US'))
+    || voices.find(v => v.lang.startsWith('en'));
+  if (preferred) utt.voice = preferred;
+  window.speechSynthesis.speak(utt);
+}
+
+function addThinking() {
+  const wrap = document.createElement('div');
+  wrap.className = 'message ai'; wrap.id = 'thinking-msg';
+  wrap.innerHTML = `<div class="avatar ai">🎓</div><div class="bubble ai"><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
+  chatBox.appendChild(wrap);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+function removeThinking() { const t = document.getElementById('thinking-msg'); if (t) t.remove(); }
+
+async function sendMessage(text) {
+  text = text.trim();
+  if (!text) return;
+
+  userInput.value = '';
+  autoResize();
+  appendMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  sendBtn.disabled = true;
+  setStatus('thinking', 'Thinking...');
+  addThinking();
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...conversationHistory
+        ],
+        max_tokens: 600,
+        temperature: 0.85
+      })
+    });
+
+    const data = await res.json();
+    removeThinking();
+
+    if (data.error) {
+      appendMessage('ai', `⚠️ Error: ${data.error.message}\n\nPlease check your API key.`);
+      setStatus('', 'Error');
+    } else {
+      const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't respond. Try again!";
+      conversationHistory.push({ role: 'assistant', content: reply });
+      appendMessage('ai', reply);
+      speakText(reply);
+      setStatus('ready', 'Ready');
+    }
+  } catch (e) {
+    removeThinking();
+    appendMessage('ai', '⚠️ Connection error. Check your internet connection and try again.');
+    setStatus('', 'Error');
+  }
+
+  sendBtn.disabled = false;
+}
+
+function sendQuick(text) { userInput.value = text; sendMessage(text); }
+
+function greet() {
+  setupPanel.style.display = 'none';
+  chatArea.style.display = 'flex';
+  setStatus('ready', 'Ready');
+  const greeting = "Hello! I'm Professor Alex, your personal English conversation coach. I'm really glad you're here — the best way to improve is to practice speaking every day! 😊\n\nLet's start easy: tell me a little about yourself. Where are you from and what do you do?";
+  conversationHistory.push({ role: 'assistant', content: greeting });
+  appendMessage('ai', greeting);
+  speakText(greeting);
+}
+
+function changeKey() {
+  chatArea.style.display = 'none';
+  setupPanel.style.display = 'block';
+  conversationHistory = [];
+  chatBox.innerHTML = '';
+  setStatus('', 'Setup');
+}
+
+saveKeyBtn.addEventListener('click', () => {
+  const k = apiKeyInput.value.trim();
+  if (!k || k.length < 10) { apiKeyInput.classList.add('error'); return; }
+  apiKeyInput.classList.remove('error');
+  apiKey = k;
+  localStorage.setItem('prof_alex_groq_key', k);
+  greet();
+});
+apiKeyInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveKeyBtn.click(); });
+
+function autoResize() {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 140) + 'px';
+}
+userInput.addEventListener('input', autoResize);
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(userInput.value); }
+});
+sendBtn.addEventListener('click', () => sendMessage(userInput.value));
+
+// Speech recognition
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onresult = e => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    transcriptEl.style.display = 'block';
+    transcriptEl.textContent = '🎤 ' + (final || interim) + (final ? '' : '...');
+    if (final) userInput.value = final;
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
+    setStatus('ready', 'Ready');
+    setTimeout(() => { transcriptEl.style.display = 'none'; }, 1200);
+    if (userInput.value.trim()) sendMessage(userInput.value);
+  };
+
+  recognition.onerror = e => {
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
+    setStatus('ready', 'Ready');
+    transcriptEl.style.display = 'none';
+    if (e.error === 'not-allowed') {
+      appendMessage('ai', "⚠️ Microphone access was denied. Click the 🔒 icon in your browser's address bar, allow microphone access, and refresh the page.");
+    }
+  };
+
+  micBtn.addEventListener('click', () => {
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+      userInput.value = '';
+      transcriptEl.style.display = 'none';
+      recognition.start();
+      isRecording = true;
+      micBtn.classList.add('recording');
+      micBtn.textContent = '⏹️';
+      setStatus('listening', 'Listening...');
+    }
+  });
+} else {
+  micBtn.title = 'Voice not supported — use Chrome or Edge';
+  micBtn.style.opacity = '0.35';
+  micBtn.style.cursor = 'not-allowed';
+}
+
+if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = () => {};
+
+if (apiKey) greet();
+</script>
+</body>
+</html>
